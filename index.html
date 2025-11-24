@@ -1,1 +1,262 @@
-<h1>Lista dos Cavalos</h1>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Identificador de Cavalos</title>
+  <style>
+    :root{--bg:#f4f4f7;--card:#ffffff;--muted:#666;--accent:#4a7cff}
+    *{box-sizing:border-box}
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 20px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      color:#1f2937;
+    }
+    .container{
+      max-width:960px;
+      margin:0 auto;
+    }
+    .controls{
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:16px;
+    }
+    button#addHorseBtn{
+      padding:10px 18px;border:none;border-radius:8px;background:var(--accent);color:white;font-size:15px;cursor:pointer;
+      box-shadow:0 6px 18px rgba(74,124,255,0.18);
+    }
+
+    .horse-card {
+      background: var(--card);
+      padding: 14px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      margin-bottom: 14px;
+      max-width: 480px;
+      border: 1px solid rgba(15,23,42,0.03);
+    }
+    .label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .value {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color:#0f172a;
+    }
+
+    /* Modal */
+    #modalBg{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.45);
+      backdrop-filter:blur(4px);
+      justify-content:center;
+      align-items:center;
+      padding:20px;
+      z-index:999;
+    }
+    #modalCard{
+      background:white;padding:18px;border-radius:12px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(2,6,23,0.2);
+    }
+    input[type="text"], input[type="number"]{
+      width:100%;padding:8px;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:10px;font-size:14px;
+    }
+    .modal-actions{display:flex;gap:10px;justify-content:space-between;margin-top:6px}
+    .btn-primary{flex:1;padding:9px;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer}
+    .btn-cancel{flex:1;padding:9px;border-radius:8px;border:none;background:#e6e6e6;cursor:pointer}
+
+    /* Responsive */
+    @media (max-width:600px){
+      .controls{justify-content:center}
+      .horse-card{max-width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Identificador de Cavalos</h1>
+
+    <div class="controls">
+      <button id="addHorseBtn" aria-haspopup="dialog" aria-controls="modalBg">Adicionar Cavalo</button>
+    </div>
+
+    <!-- Exemplo inicial (pode remover) -->
+    <div class="horse-card" id="exampleCard">
+      <div class="label">Nome do Cavalo</div>
+      <div class="value">Aqui vai o nome do cavalo</div>
+
+      <div class="label">Pai</div>
+      <div class="value">Nome do pai</div>
+
+      <div class="label">Mãe</div>
+      <div class="value">Nome da mãe</div>
+
+      <div class="label">Copas Ganhas</div>
+      <div class="value">0</div>
+    </div>
+
+    <!-- Cards adicionados aparecerão acima do botão por padrão -->
+  </div>
+
+  <!-- Modal de Adição -->
+  <div id="modalBg" role="dialog" aria-modal="true" aria-hidden="true">
+    <div id="modalCard">
+      <h2 style="margin-top:0;text-align:center;margin-bottom:8px">Adicionar Cavalo</h2>
+
+      <label class="label">Nome</label>
+      <input id="inNome" type="text"  />
+
+      <label class="label">Pai</label>
+      <input id="inPai" type="text"  />
+
+      <label class="label">Mãe</label>
+      <input id="inMae" type="text"  />
+
+      <label class="label">Copas Ganhas</label>
+      <input id="inCopas" type="number" min="0"  />
+
+      <div class="modal-actions">
+        <button id="btnSalvar" class="btn-primary">Salvar</button>
+        <button id="btnCancelar" class="btn-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Script moved to bottom so DOM elements exist when this runs (fixes error).
+    (function(){
+      const modal = document.getElementById('modalBg');
+      const addBtn = document.getElementById('addHorseBtn');
+      const salvar = document.getElementById('btnSalvar');
+      const cancelar = document.getElementById('btnCancelar');
+      const container = document.querySelector('.container');
+      const example = document.getElementById('exampleCard');
+
+      function openModal(){
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden','false');
+        // trap scroll
+        document.body.style.overflow = 'hidden';
+        document.getElementById('inNome').focus();
+      }
+      function closeModal(){
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden','true');
+        document.body.style.overflow = '';
+        limparInputs();
+        addBtn.focus();
+      }
+
+      function limparInputs(){
+        document.getElementById('inNome').value = '';
+        document.getElementById('inPai').value = '';
+        document.getElementById('inMae').value = '';
+        document.getElementById('inCopas').value = '';
+      }
+
+      addBtn.addEventListener('click', openModal);
+      cancelar.addEventListener('click', closeModal);
+
+      // close modal on overlay click
+      modal.addEventListener('click', (e)=>{
+        if(e.target === modal) closeModal();
+      });
+
+      // save
+      salvar.addEventListener('click', ()=>{
+        const nome = document.getElementById('inNome').value.trim();
+        if(!nome){
+          alert('Digite o nome do cavalo.');
+          document.getElementById('inNome').focus();
+          return;
+        }
+        const pai = document.getElementById('inPai').value.trim();
+        const mae = document.getElementById('inMae').value.trim();
+        const copas = document.getElementById('inCopas').value.trim() || '0';
+
+        const card = document.createElement('div');
+        card.className = 'horse-card';
+        card.innerHTML = `
+          <div class="label">Nome do Cavalo</div>
+          <div class="value">${escapeHtml(nome)}</div>
+          <div class="label">Pai</div>
+          <div class="value">${escapeHtml(pai)}</div>
+          <div class="label">Mãe</div>
+          <div class="value">${escapeHtml(mae)}</div>
+          <div class="label">Copas Ganhas</div>
+          <div class="value">${escapeHtml(copas)}</div>
+        `;
+
+        // insert new card before the example card (so newest appear on top)
+        container.insertBefore(card, example);
+        closeModal();
+      });
+
+      // basic HTML escape to avoid injection when using innerHTML
+      function escapeHtml(str){
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      // keyboard accessibility: Esc to close modal
+      document.addEventListener('keydown',(e)=>{
+        if(e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+
+    })();
+    // --- Persistência no localStorage ---
+  function salvarLista() {
+    const cards = [...document.querySelectorAll('.horse-card')].map(card => {
+      const valores = card.querySelectorAll('.value');
+      return {
+        nome: valores[0].textContent,
+        pai: valores[1].textContent,
+        mae: valores[2].textContent,
+        copas: valores[3].textContent,
+      };
+    });
+    localStorage.setItem('cavalos', JSON.stringify(cards));
+  }
+
+  function carregarLista() {
+    const dados = JSON.parse(localStorage.getItem('cavalos') || '[]');
+    dados.forEach(cavalo => criarCard(cavalo));
+  }
+
+  function criarCard({ nome, pai, mae, copas }) {
+    const card = document.createElement('div');
+    card.className = 'horse-card';
+    card.innerHTML = `
+      <div class="label">Nome do Cavalo</div>
+      <div class="value">${nome}</div>
+      <div class="label">Pai</div>
+      <div class="value">${pai}</div>
+      <div class="label">Mãe</div>
+      <div class="value">${mae}</div>
+      <div class="label">Copas Ganhas</div>
+      <div class="value">${copas}</div>
+    `;
+    document.body.insertBefore(card, document.getElementById('addHorseBtn'));
+  }
+
+  window.onload = carregarLista;
+
+</script>
+</body>
+</html>
