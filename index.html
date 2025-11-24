@@ -1,44 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Identificador de Cavalos (Supabase)</title>
-  <style>
-    :root{--bg:#f6f7fb;--card:#fff;--muted:#666;--accent:#4a7cff}
-    *{box-sizing:border-box}
-    body{font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);margin:0;padding:22px}
-    .wrap{max-width:980px;margin:0 auto}
-    h1{text-align:center;color:#0f172a;margin:6px 0 20px}
-    .controls{display:flex;justify-content:center;margin-bottom:18px}
-    .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
-    .primary{background:var(--accent);color:#fff;box-shadow:0 8px 24px rgba(74,124,255,0.15)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 4px 14px rgba(2,6,23,0.06);border:1px solid rgba(2,6,23,0.04)}
-    .label{font-size:12px;color:var(--muted);margin-top:8px}
-    .value{font-weight:600;font-size:16px;color:#0f172a}
-    .actions{display:flex;gap:8px;margin-top:12px}
-    .edit{background:#f59e0b;color:#08203a;padding:8px 12px;border-radius:8px;border:0}
-    .del{background:#ef4444;color:white;padding:8px 12px;border-radius:8px;border:0}
-    /* modal */
-    #modal{display:none;position:fixed;inset:0;background:rgba(2,6,23,0.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;z-index:999}
-    #modalBox{width:100%;max-width:420px;background:white;padding:18px;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,0.2)}
-    input[type="text"], input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ee;margin-top:8px}
-    .row{display:flex;gap:10px;margin-top:12px}
-    @media (max-width:520px){ .row{flex-direction:column} .controls{padding:0 10px} }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identificador de Cavalos</title>
+<style>
+  :root{--bg:#f6f7fb;--card:#fff;--muted:#666;--accent:#4a7cff}
+  body{font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);margin:0;padding:22px}
+  h1{text-align:center;color:#0f172a;margin:6px 0 20px}
+  .wrap{max-width:980px;margin:0 auto}
+  .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
+  .primary{background:var(--accent);color:#fff;box-shadow:0 8px 24px rgba(74,124,255,0.15)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+  .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 4px 14px rgba(2,6,23,0.06);border:1px solid rgba(2,6,23,0.04)}
+  .label{font-size:12px;color:var(--muted);margin-top:8px}
+  .value{font-weight:600;font-size:16px;color:#0f172a}
+  .actions{display:flex;gap:8px;margin-top:12px}
+  .edit{background:#f59e0b;color:#08203a;padding:8px 12px;border-radius:8px;border:0}
+  .del{background:#ef4444;color:white;padding:8px 12px;border-radius:8px;border:0}
+  #loginBox, #mainBox, #modal{max-width:420px;margin:0 auto}
+  #modal{display:none;position:fixed;inset:0;background:rgba(2,6,23,0.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;z-index:999}
+  #modalBox{width:100%;background:white;padding:18px;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,0.2)}
+  input[type="text"], input[type="number"], input[type="password"]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ee;margin-top:8px}
+  .row{display:flex;gap:10px;margin-top:12px}
+  @media (max-width:520px){ .row{flex-direction:column} }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Identificador de Cavalos</h1>
+<div class="wrap">
+  <h1>Identificador de Cavalos</h1>
 
+  <!-- Login / Cadastro -->
+  <div id="loginBox">
+    <h3>Login ou Cadastro</h3>
+    <input id="username" placeholder="Nome de usuário" />
+    <input id="password" type="password" placeholder="Senha" />
+    <div class="row">
+      <button id="loginBtn" class="btn primary" style="flex:1">Entrar</button>
+      <button id="signupBtn" class="btn" style="flex:1;background:#ddd">Cadastrar</button>
+    </div>
+  </div>
+
+  <!-- Área principal -->
+  <div id="mainBox" style="display:none">
     <div class="controls">
-      <button id="addBtn" class="btn primary">Adicionar Cavalo</button>
+      <button id="addBtn" class="btn primary" style="display:none">Adicionar Cavalo</button>
     </div>
-
-    <div id="list" class="grid" aria-live="polite">
-      <!-- cards serão renderizados aqui -->
-    </div>
+    <div id="list" class="grid" aria-live="polite"></div>
   </div>
 
   <!-- Modal -->
@@ -47,181 +55,44 @@
       <h3 id="modalTitle">Adicionar Cavalo</h3>
       <label class="label">Nome</label>
       <input id="nome" type="text" />
-
       <label class="label">Pai</label>
       <input id="pai" type="text" />
-
       <label class="label">Mãe</label>
       <input id="mae" type="text" />
-
       <label class="label">Copas Ganhas</label>
       <input id="copas" type="number" min="0" />
-
       <div class="row">
         <button id="saveBtn" class="btn primary" style="flex:1">Salvar</button>
         <button id="cancelBtn" class="btn" style="flex:1;background:#ddd">Cancelar</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Supabase client (ESM) -->
-  <script type="module">
-    // ====== 1) COLE AQUI AS SUAS CREDENCIAIS DO SUPABASE ======
-    const SUPABASE_URL = "https://uhnfgfmlghctzrictcaf.supabase.co"; // -> substitua
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobmZnZm1sZ2hjdHpyaWN0Y2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODE0NjYsImV4cCI6MjA3OTU1NzQ2Nn0.1ogJDVg6P6NFdlWuC7K9Jg66e01gVujJJFdq0FWc1lg"; // -> substitua
-    // =======================================================
+<!-- JS Inline -->
+<script type="module">
+  // ========== COLE AQUI SUAS CREDENCIAIS ==========
+  const SUPABASE_URL = "https://uhnfgfmlghctzrictcaf.supabase.co"; // substitua
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobmZnZm1sZ2hjdHpyaWN0Y2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODE0NjYsImV4cCI6MjA3OTU1NzQ2Nn0.1ogJDVg6P6NFdlWuC7K9Jg66e01gVujJJFdq0FWc1lg"; // substitua
+  // ==============================================
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // elementos
-    const addBtn = document.getElementById('addBtn');
-    const modal = document.getElementById('modal');
-    const nomeIn = document.getElementById('nome');
-    const paiIn = document.getElementById('pai');
-    const maeIn = document.getElementById('mae');
-    const copasIn = document.getElementById('copas');
-    const saveBtn = document.getElementById('saveBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const listEl = document.getElementById('list');
-    const modalTitle = document.getElementById('modalTitle');
-
-    let editingId = null; // se não nulo -> edição
-
-    addBtn.addEventListener('click', () => {
-      editingId = null;
-      modalTitle.innerText = 'Adicionar Cavalo';
-      nomeIn.value = paiIn.value = maeIn.value = copasIn.value = '';
-      openModal();
-    });
-
-    cancelBtn.addEventListener('click', closeModal);
-
-    function openModal(){
-      modal.style.display = 'flex';
-      modal.setAttribute('aria-hidden','false');
-      nomeIn.focus();
-    }
-    function closeModal(){
-      modal.style.display = 'none';
-      modal.setAttribute('aria-hidden','true');
-    }
-
-    // Carrega lista do Supabase
-    async function loadList(){
-      listEl.innerHTML = '<div style="grid-column:1/-1;color:#6b7280">Carregando...</div>';
-      const { data, error } = await supabase
-        .from('cavalos')
-        .select('*')
-        .order('inserted_at', { ascending: false });
-
-      if(error){
-        listEl.innerHTML = `<div style="grid-column:1/-1;color:#b91c1c">Erro ao carregar: ${error.message}</div>`;
-        console.error(error);
-        return;
-      }
-
-      renderList(data || []);
-    }
-
-    function renderList(items){
-      if(!items || items.length === 0){
-        listEl.innerHTML = '<div style="grid-column:1/-1;color:#6b7280">Nenhum cavalo salvo.</div>';
-        return;
-      }
-
-      listEl.innerHTML = '';
-      items.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.id = item.id;
-
-        card.innerHTML = `
-          <div><div class="label">Nome</div><div class="value">${escapeHtml(item.nome)}</div></div>
-          <div><div class="label">Pai</div><div class="value">${escapeHtml(item.pai || '')}</div></div>
-          <div><div class="label">Mãe</div><div class="value">${escapeHtml(item.mae || '')}</div></div>
-          <div><div class="label">Copas</div><div class="value">${escapeHtml(String(item.copas ?? 0))}</div></div>
-          <div class="actions">
-            <button class="edit">Editar</button>
-            <button class="del">Excluir</button>
-          </div>
-        `;
-
-        // eventos
-        card.querySelector('.edit').addEventListener('click', () => {
-          editingId = item.id;
-          modalTitle.innerText = 'Editar Cavalo';
-          nomeIn.value = item.nome || '';
-          paiIn.value = item.pai || '';
-          maeIn.value = item.mae || '';
-          copasIn.value = item.copas ?? 0;
-          openModal();
-        });
-
-        card.querySelector('.del').addEventListener('click', async () => {
-          if(!confirm('Excluir este cavalo?')) return;
-          const { error } = await supabase.from('cavalos').delete().eq('id', item.id);
-          if(error){
-            alert('Erro ao excluir: ' + error.message);
-            console.error(error);
-            return;
-          }
-          // recarrega lista
-          await loadList();
-        });
-
-        listEl.appendChild(card);
-      });
-    }
-
-    saveBtn.addEventListener('click', async () => {
-      const nome = nomeIn.value.trim();
-      if(!nome) { alert('Digite o nome do cavalo.'); nomeIn.focus(); return; }
-      const pai = paiIn.value.trim();
-      const mae = maeIn.value.trim();
-      const copas = Number(copasIn.value) || 0;
-
-      if(editingId){
-        // update
-        const { error } = await supabase
-          .from('cavalos')
-          .update({ nome, pai, mae, copas })
-          .eq('id', editingId);
-
-        if(error){ alert('Erro ao atualizar: ' + error.message); console.error(error); return; }
-      } else {
-        // insert
-        const { error } = await supabase
-          .from('cavalos')
-          .insert({ nome, pai, mae, copas });
-
-        if(error){ alert('Erro ao inserir: ' + error.message); console.error(error); return; }
-      }
-
-      closeModal();
-      await loadList();
-    });
-
-    // Basic HTML escape
-    function escapeHtml(str){
-      if(str === null || str === undefined) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    // Inicializa: carrega lista ao abrir a página
-    loadList();
-
-    // Opcional: subscriber em tempo real (Se quiser ver alterações sem refresh, habilite)
-    // const channel = supabase.channel('realtime:cavalos')
-    //   .on('postgres_changes', { event: '*', schema: 'public', table: 'cavalos' }, payload => {
-    //     // recarrega quando algo mudou
-    //     loadList();
-    //   }).subscribe();
-  </script>
-</body>
-</html>
+  // ELEMENTOS
+  const loginBox = document.getElementById('loginBox');
+  const mainBox = document.getElementById('mainBox');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const loginBtn = document.getElementById('loginBtn');
+  const signupBtn = document.getElementById('signupBtn');
+  const addBtn = document.getElementById('addBtn');
+  const listEl = document.getElementById('list');
+  const modal = document.getElementById('modal');
+  const modalBox = document.getElementById('modalBox');
+  const modalTitle = document.getElementById('modalTitle');
+  const nomeIn = document.getElementById('nome');
+  const paiIn = document.getElementById('pai');
+  const maeIn = document.getElementById('mae');
+  const copasIn = document.getElementById('copas');
+  const saveBtn = document.getElementById('saveBtn')
+  const cancelBtn = document.getElementById('cancelBtn');
