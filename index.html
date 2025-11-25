@@ -1,211 +1,257 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lista dos Cavalos</title>
-<style>
-:root{--bg:#f6f7fb;--card:#fff;--muted:#666;--accent:#4a7cff}
-*{box-sizing:border-box}
-body{font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);margin:0;padding:22px}
-.wrap{max-width:980px;margin:0 auto}
-h1{text-align:center;color:#0f172a;margin:6px 0 20px}
-.controls{display:flex;justify-content:center;margin-bottom:18px;gap:10px}
-.btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
-.primary{background:var(--accent);color:#fff;box-shadow:0 8px 24px rgba(74,124,255,0.15)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 4px 14px rgba(2,6,23,0.06);border:1px solid rgba(2,6,23,0.04)}
-.label{font-size:12px;color:var(--muted);margin-top:8px}
-.value{font-weight:600;font-size:16px;color:#0f172a}
-.actions{display:flex;gap:8px;margin-top:12px}
-.edit{background:#f59e0b;color:#08203a;padding:8px 12px;border-radius:8px;border:0}
-.del{background:#ef4444;color:white;padding:8px 12px;border-radius:8px;border:0}
-#modal,#loginModal{display:none;position:fixed;inset:0;background:rgba(2,6,23,0.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;z-index:999}
-#modalBox,#loginBox{width:100%;max-width:420px;background:white;padding:18px;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,0.2)}
-input[type="text"], input[type="number"], input[type="password"]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ee;margin-top:8px}
-.row{display:flex;gap:10px;margin-top:12px}
-@media(max-width:520px){.row{flex-direction:column}.controls{padding:0 10px}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lista dos Cavalos</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--muted:#666;--accent:#4a7cff}
+    *{box-sizing:border-box}
+    body{font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);margin:0;padding:22px}
+    .wrap{max-width:980px;margin:0 auto}
+    h1{text-align:center;color:#0f172a;margin:6px 0 20px}
+    .controls{display:flex;justify-content:center;margin-bottom:18px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
+    .primary{background:var(--accent);color:#fff;box-shadow:0 8px 24px rgba(74,124,255,0.15)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 4px 14px rgba(2,6,23,0.06);border:1px solid rgba(2,6,23,0.04)}
+    .label{font-size:12px;color:var(--muted);margin-top:8px}
+    .value{font-weight:600;font-size:16px;color:#0f172a}
+    .actions{display:flex;gap:8px;margin-top:12px}
+    .edit{background:#f59e0b;color:#08203a;padding:8px 12px;border-radius:8px;border:0}
+    .del{background:#ef4444;color:white;padding:8px 12px;border-radius:8px;border:0}
+    #modal{display:none;position:fixed;inset:0;background:rgba(2,6,23,0.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;z-index:999}
+    #modalBox{width:100%;max-width:420px;background:white;padding:18px;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,0.2)}
+    input[type="text"], input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ee;margin-top:8px}
+    .row{display:flex;gap:10px;margin-top:12px}
+    @media (max-width:520px){ .row{flex-direction:column} .controls{padding:0 10px} }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Lista dos Cavalos</h1>
+  <div class="wrap">
+    <h1>Lista dos Cavalos</h1>
 
-  <div class="controls" id="topControls">
-    <button id="loginBtn" class="btn primary">Login / Cadastro</button>
-    <button id="addBtn" class="btn primary" style="display:none">Adicionar Cavalo</button>
-    <span id="userInfo" style="align-self:center;color:#333;font-weight:600"></span>
-  </div>
+    <div id="userArea" style="text-align:center;margin-bottom:18px;color:#0f172a;font-weight:600"></div>
 
-  <div id="list" class="grid" aria-live="polite">
-    <!-- cavalos serão renderizados aqui -->
-  </div>
-</div>
+    <div class="controls" id="controlsArea">
+      <button id="loginBtn" class="btn primary">Login / Cadastrar</button>
+    </div>
 
-<!-- Modal Cavalo -->
-<div id="modal" role="dialog" aria-hidden="true">
-  <div id="modalBox">
-    <h3 id="modalTitle">Adicionar Cavalo</h3>
-    <label class="label">Nome</label><input id="nome" type="text">
-    <label class="label">Pai</label><input id="pai" type="text">
-    <label class="label">Mãe</label><input id="mae" type="text">
-    <label class="label">Copas Ganhas</label><input id="copas" type="number" min="0">
-    <div class="row">
-      <button id="saveBtn" class="btn primary" style="flex:1">Salvar</button>
-      <button id="cancelBtn" class="btn" style="flex:1;background:#ddd">Cancelar</button>
+    <div id="list" class="grid" aria-live="polite"></div>
+
+    <div style="text-align:right;margin-top:20px;color:#6b7280;font-size:14px;">
+      Feito por brick.
     </div>
   </div>
-</div>
 
-<!-- Modal Login -->
-<div id="loginModal" role="dialog" aria-hidden="true">
-  <div id="loginBox">
-    <h3 id="loginTitle">Login / Cadastro</h3>
-    <label class="label">Usuário</label><input id="loginUser" type="text">
-    <label class="label">Senha</label><input id="loginPass" type="password">
-    <div class="row">
-      <button id="loginSubmit" class="btn primary" style="flex:1">Entrar / Cadastrar</button>
-      <button id="loginCancel" class="btn" style="flex:1;background:#ddd">Cancelar</button>
-    </div>
-  </div>
-</div>
+  <div id="modal" role="dialog" aria-hidden="true">
+    <div id="modalBox">
+      <h3 id="modalTitle">Adicionar Cavalo</h3>
+      <label class="label">Nome</label>
+      <input id="nome" type="text" />
 
-<script type="module">
-const SUPABASE_URL = "https://uhnfgfmlghctzrictcaf.supabase.co"; 
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobmZnZm1sZ2hjdHpyaWN0Y2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODE0NjYsImV4cCI6MjA3OTU1NzQ2Nn0.1ogJDVg6P6NFdlWuC7K9Jg66e01gVujJJFdq0FWc1lg";
+      <label class="label">Pai</label>
+      <input id="pai" type="text" />
 
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-const supabase = createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+      <label class="label">Mãe</label>
+      <input id="mae" type="text" />
 
-const addBtn = document.getElementById('addBtn');
-const modal = document.getElementById('modal');
-const nomeIn = document.getElementById('nome');
-const paiIn = document.getElementById('pai');
-const maeIn = document.getElementById('mae');
-const copasIn = document.getElementById('copas');
-const saveBtn = document.getElementById('saveBtn');
-const cancelBtn = document.getElementById('cancelBtn');
-const listEl = document.getElementById('list');
-const modalTitle = document.getElementById('modalTitle');
+      <label class="label">Copas Ganhas</label>
+      <input id="copas" type="number" min="0" />
 
-const loginModal = document.getElementById('loginModal');
-const loginUser = document.getElementById('loginUser');
-const loginPass = document.getElementById('loginPass');
-const loginSubmit = document.getElementById('loginSubmit');
-const loginCancel = document.getElementById('loginCancel');
-const loginBtn = document.getElementById('loginBtn');
-const userInfo = document.getElementById('userInfo');
-
-let editingId = null;
-let currentUser = null; // {id, username, role}
-
-// Funções modal
-function openModal(){modal.style.display='flex';modal.setAttribute('aria-hidden','false');nomeIn.focus();}
-function closeModal(){modal.style.display='none';modal.setAttribute('aria-hidden','true');}
-function openLogin(){loginModal.style.display='flex';loginModal.setAttribute('aria-hidden','false');loginUser.focus();}
-function closeLogin(){loginModal.style.display='none';loginModal.setAttribute('aria-hidden','true');}
-
-// Login / Cadastro
-loginBtn.addEventListener('click',()=>{openLogin();});
-loginCancel.addEventListener('click',closeLogin);
-
-loginSubmit.addEventListener('click', async ()=>{
-  const username = loginUser.value.trim();
-  const senha = loginPass.value.trim();
-  if(!username||!senha){alert('Preencha usuário e senha'); return;}
-
-  // Verifica se existe
-  let { data:user,error } = await supabase.from('usuarios').select('*').eq('username',username).single();
-  if(error && error.code!=='PGRST116'){console.error(error); return;}
-
-  if(user){ // usuário existe
-    if(user.senha !== senha){alert('Senha incorreta'); return;}
-    currentUser = user;
-  }else{ // cria novo usuário
-    const { error: insertErr, data:newUser } = await supabase.from('usuarios').insert({username,senha}).select().single();
-    if(insertErr){alert('Erro ao criar usuário: '+insertErr.message); return;}
-    currentUser = newUser;
-  }
-
-  userInfo.textContent = `Logado como: ${currentUser.username} (${currentUser.role})`;
-  if(currentUser.role==='admin'){addBtn.style.display='inline-block';}else{addBtn.style.display='none';}
-  closeLogin();
-  loginUser.value=loginPass.value='';
-});
-
-// Modal Cavalo
-addBtn.addEventListener('click',()=>{editingId=null;modalTitle.innerText='Adicionar Cavalo';nomeIn.value=paiIn.value=maeIn.value=copasIn.value='';openModal();});
-cancelBtn.addEventListener('click',closeModal);
-
-saveBtn.addEventListener('click', async ()=>{
-  if(!currentUser||currentUser.role!=='admin'){alert('Somente admins podem adicionar/editar cavalos');return;}
-  const nome = nomeIn.value.trim();
-  if(!nome){alert('Digite o nome do cavalo');return;}
-  const pai = paiIn.value.trim();
-  const mae = maeIn.value.trim();
-  const copas = Number(copasIn.value)||0;
-
-  if(editingId){
-    const { error } = await supabase.from('cavalos').update({nome,pai,mae,copas}).eq('id',editingId);
-    if(error){alert('Erro ao atualizar: '+error.message);console.error(error);return;}
-  }else{
-    const { error } = await supabase.from('cavalos').insert({nome,pai,mae,copas});
-    if(error){alert('Erro ao inserir: '+error.message);console.error(error);return;}
-  }
-  closeModal();
-  loadList();
-});
-
-// Carrega lista
-async function loadList(){
-  listEl.innerHTML='<div style="grid-column:1/-1;color:#6b7280">Carregando...</div>';
-  const { data, error } = await supabase.from('cavalos').select('*').order('inserted_at',{ascending:false});
-  if(error){listEl.innerHTML=`<div style="grid-column:1/-1;color:#b91c1c">Erro: ${error.message}</div>`;console.error(error);return;}
-  renderList(data||[]);
-}
-
-function renderList(items){
-  listEl.innerHTML='';
-  if(!items.length){listEl.innerHTML='<div style="grid-column:1/-1;color:#6b7280">Nenhum cavalo salvo.</div>';return;}
-  items.forEach(item=>{
-    const card=document.createElement('div');card.className='card';
-    card.dataset.id=item.id;
-    card.innerHTML=`
-      <div><div class="label">Nome</div><div class="value">${escapeHtml(item.nome)}</div></div>
-      <div><div class="label">Pai</div><div class="value">${escapeHtml(item.pai||'')}</div></div>
-      <div><div class="label">Mãe</div><div class="value">${escapeHtml(item.mae||'')}</div></div>
-      <div><div class="label">Copas</div><div class="value">${escapeHtml(String(item.copas||0))}</div></div>
-      <div class="actions" style="display:${currentUser&&currentUser.role==='admin'?'flex':'none'}">
-        <button class="edit">Editar</button>
-        <button class="del">Excluir</button>
+      <div class="row">
+        <button id="saveBtn" class="btn primary" style="flex:1">Salvar</button>
+        <button id="cancelBtn" class="btn" style="flex:1;background:#ddd">Cancelar</button>
       </div>
-    `;
-    if(currentUser&&currentUser.role==='admin'){
-      card.querySelector('.edit').addEventListener('click',()=>{
-        editingId=item.id;
-        modalTitle.innerText='Editar Cavalo';
-        nomeIn.value=item.nome||'';
-        paiIn.value=item.pai||'';
-        maeIn.value=item.mae||'';
-        copasIn.value=item.copas||0;
-        openModal();
-      });
-      card.querySelector('.del').addEventListener('click',async()=>{
-        if(!confirm('Excluir este cavalo?')) return;
-        const { error } = await supabase.from('cavalos').delete().eq('id',item.id);
-        if(error){alert('Erro: '+error.message);console.error(error);return;}
-        loadList();
+    </div>
+  </div>
+
+  <div id="loginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);align-items:center;justify-content:center;z-index:999;padding:20px;">
+    <div style="background:white;padding:20px;border-radius:12px;max-width:380px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.2)">
+      <h3 style="margin-top:0">Login / Cadastro</h3>
+
+      <label class="label">Usuário</label>
+      <input id="loginUser" type="text" />
+
+      <label class="label" style="margin-top:10px">Senha</label>
+      <input id="loginPass" type="password" />
+
+      <div class="row" style="margin-top:18px">
+        <button id="doLogin" class="btn primary" style="flex:1">Entrar</button>
+        <button id="doRegister" class="btn" style="flex:1;background:#ccc">Cadastrar</button>
+      </div>
+
+      <button id="closeLogin" style="margin-top:14px;width:100%;padding:8px;border:0;background:#ddd;border-radius:8px">Fechar</button>
+    </div>
+  </div>
+
+  <script type="module">
+    const SUPABASE_URL = "https://uhnfgfmlghctzrictcaf.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobmZnZm1sZ2hjdHpyaWN0Y2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODE0NjYsImV4cCI6MjA3OTU1NzQ2Nn0.1ogJDVg6P6NFdlWuC7K9Jg66e01gVujJJFdq0FWc1lg";
+
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let editingId = null;
+
+    const userArea = document.getElementById('userArea');
+    const controlsArea = document.getElementById('controlsArea');
+    const loginBtn = document.getElementById('loginBtn');
+
+    const loginModal = document.getElementById('loginModal');
+    const closeLogin = document.getElementById('closeLogin');
+    const doLogin = document.getElementById('doLogin');
+    const doRegister = document.getElementById('doRegister');
+    const loginUser = document.getElementById('loginUser');
+    const loginPass = document.getElementById('loginPass');
+
+    const addBtn = document.createElement('button');
+    addBtn.className = "btn primary";
+    addBtn.textContent = "Adicionar Cavalo";
+    addBtn.id = "addBtn";
+
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+
+    const nomeIn = document.getElementById('nome');
+    const paiIn = document.getElementById('pai');
+    const maeIn = document.getElementById('mae');
+    const copasIn = document.getElementById('copas');
+    const saveBtn = document.getElementById('saveBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    const listEl = document.getElementById('list');
+
+    function escapeHtml(str){
+      if(str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    loginBtn.onclick = () => { loginModal.style.display = 'flex'; };
+    closeLogin.onclick = () => { loginModal.style.display = 'none'; };
+
+    doLogin.onclick = async () => {
+      const u = loginUser.value.trim();
+      const s = loginPass.value.trim();
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('username', u)
+        .eq('senha', s)
+        .single();
+
+      if(error || !data){ alert('Usuário ou senha incorretos'); return; }
+      currentUser = data;
+      loginModal.style.display = 'none';
+      renderUser();
+    };
+
+    doRegister.onclick = async () => {
+      const u = loginUser.value.trim();
+      const s = loginPass.value.trim();
+      if(!u || !s){ alert('Preencha usuário e senha'); return; }
+
+      const { error } = await supabase
+        .from('usuarios')
+        .insert({ username: u, senha: s, role: 'user' });
+
+      if(error){ alert('Erro ao cadastrar: ' + error.message); return; }
+      alert('Cadastrado com sucesso! Agora faça login.');
+    };
+
+    function renderUser(){
+      if(!currentUser){
+        userArea.innerHTML = "";
+        controlsArea.innerHTML = "";
+        controlsArea.appendChild(loginBtn);
+        return;
+      }
+      userArea.innerHTML = `Logado como: ${escapeHtml(currentUser.username)} (${currentUser.role})`;
+      controlsArea.innerHTML = "";
+      if(currentUser.role === 'admin'){
+        controlsArea.appendChild(addBtn);
+      }
+    }
+
+    addBtn.onclick = () => {
+      editingId = null;
+      modalTitle.textContent = "Adicionar Cavalo";
+      nomeIn.value = paiIn.value = maeIn.value = copasIn.value = '';
+      modal.style.display = 'flex';
+    };
+
+    cancelBtn.onclick = () => { modal.style.display = 'none'; };
+
+    saveBtn.onclick = async () => {
+      const nome = nomeIn.value.trim();
+      const pai = paiIn.value.trim();
+      const mae = maeIn.value.trim();
+      const copas = Number(copasIn.value) || 0;
+      if(!nome){ alert('Digite o nome'); return; }
+      if(editingId){ await supabase.from('cavalos').update({ nome, pai, mae, copas }).eq('id', editingId); }
+      else{ await supabase.from('cavalos').insert({ nome, pai, mae, copas }); }
+      modal.style.display = 'none';
+      loadList();
+    };
+
+    async function loadList(){
+      const { data } = await supabase.from('cavalos').select('*').order('inserted_at', { ascending: false });
+      renderList(data || []);
+    }
+
+    function renderList(items){
+      if(!items.length){
+        listEl.innerHTML = '<div style="grid-column:1/-1;color:#6b7280">Nenhum cavalo salvo.</div>';
+        return;
+      }
+      listEl.innerHTML = '';
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div><div class="label">Nome</div><div class="value">${escapeHtml(item.nome)}</div></div>
+          <div><div class="label">Pai</div><div class="value">${escapeHtml(item.pai || '')}</div></div>
+          <div><div class="label">Mãe</div><div class="value">${escapeHtml(item.mae || '')}</div></div>
+          <div><div class="label">Copas</div><div class="value">${escapeHtml(String(item.copas || 0))}</div></div>
+        `;
+        if(currentUser && currentUser.role === 'admin'){
+          const actions = document.createElement('div');
+          actions.className = 'actions';
+          const editBtn = document.createElement('button');
+          editBtn.className = 'edit';
+          editBtn.textContent = 'Editar';
+          editBtn.onclick = () => {
+            editingId = item.id;
+            modalTitle.textContent = 'Editar Cavalo';
+            nomeIn.value = item.nome;
+            paiIn.value = item.pai;
+            maeIn.value = item.mae;
+            copasIn.value = item.copas;
+            modal.style.display = 'flex';
+          };
+          const delBtn = document.createElement('button');
+          delBtn.className = 'del';
+          delBtn.textContent = 'Excluir';
+          delBtn.onclick = async () => {
+            if(!confirm('Excluir este cavalo?')) return;
+            await supabase.from('cavalos').delete().eq('id', item.id);
+            loadList();
+          };
+          actions.appendChild(editBtn);
+          actions.appendChild(delBtn);
+          card.appendChild(actions);
+        }
+        listEl.appendChild(card);
       });
     }
-    listEl.appendChild(card);
-  });
-}
 
-// Escapar HTML
-function escapeHtml(str){if(str==null)return'';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-
-// Inicializa
-loadList();
-</script>
+    loadList();
+  </script>
 </body>
 </html>
