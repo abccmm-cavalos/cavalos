@@ -170,13 +170,15 @@
         userArea.innerHTML = "";
         controlsArea.innerHTML = "";
         controlsArea.appendChild(loginBtn);
+        loadList();
         return;
       }
-      userArea.innerHTML = `Logado como: ${escapeHtml(currentUser.username)} (${currentUser.role})`;
+      userArea.innerHTML = 'Logado como: ' + escapeHtml(currentUser.username) + ' (' + escapeHtml(currentUser.role) + ')';
       controlsArea.innerHTML = "";
       if(currentUser.role === 'admin'){
         controlsArea.appendChild(addBtn);
       }
+      loadList();
     }
 
     addBtn.onclick = () => {
