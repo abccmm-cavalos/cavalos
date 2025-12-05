@@ -1,220 +1,293 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!doctype html>
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Identificador de Cavalos</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lista dos Cavalos</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f5f5f5;
-    }
-    .container {
-      max-width: 700px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .cavalo-card {
-      padding: 10px;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      background: #fafafa;
-    }
-    .right {
-      text-align: right;
-      margin-top: 20px;
-      font-size: 14px;
-      color: #555;
-    }
-    button {
-      margin-right: 5px;
-    }
+    :root{--bg:#f6f7fb;--card:#fff;--muted:#666;--accent:#4a7cff}
+    *{box-sizing:border-box}
+    body{font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);margin:0;padding:22px}
+    .wrap{max-width:980px;margin:0 auto}
+    h1{text-align:center;color:#0f172a;margin:6px 0 20px}
+    .controls{display:flex;justify-content:center;margin-bottom:18px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
+    .primary{background:var(--accent);color:#fff;box-shadow:0 8px 24px rgba(74,124,255,0.15)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 4px 14px rgba(2,6,23,0.06);border:1px solid rgba(2,6,23,0.04)}
+    .label{font-size:12px;color:var(--muted);margin-top:8px}
+    .value{font-weight:600;font-size:16px;color:#0f172a}
+    .actions{display:flex;gap:8px;margin-top:12px}
+    .edit{background:#f59e0b;color:#08203a;padding:8px 12px;border-radius:8px;border:0}
+    .del{background:#ef4444;color:white;padding:8px 12px;border-radius:8px;border:0}
+    #modal{display:none;position:fixed;inset:0;background:rgba(2,6,23,0.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;z-index:999}
+    #modalBox{width:100%;max-width:420px;background:white;padding:18px;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,0.2)}
+    input[type="text"], input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ee;margin-top:8px}
+    .row{display:flex;gap:10px;margin-top:12px}
+    @media (max-width:520px){ .row{flex-direction:column} .controls{padding:0 10px} }
   </style>
-
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 </head>
 <body>
-<div class="container">
-  <h1>Identificador de Cavalos</h1>
+  <div class="wrap">
+    <h1>Lista dos Cavalos</h1>
 
-  <div id="auth-area">
-    <button onclick="mostrarLogin()">Login</button>
-    <button onclick="mostrarCadastro()">Cadastrar</button>
+    <div id="userArea" style="text-align:center;margin-bottom:18px;color:#0f172a;font-weight:600"></div>
+
+    <div class="controls" id="controlsArea">
+      <button id="loginBtn" class="btn primary">Login / Cadastrar</button>
+    </div>
+
+    <div id="list" class="grid" aria-live="polite"></div>
+
+    <div style="text-align:right;margin-top:20px;color:#6b7280;font-size:14px;">
+      Feito por brick.
+    </div>
   </div>
 
-  <div id="login-box" style="display:none;">
-    <h3>Login</h3>
-    <input id="login-username" placeholder="Usuário"><br><br>
-    <input id="login-senha" type="password" placeholder="Senha"><br><br>
-    <button onclick="login()">Entrar</button>
+  <div id="modal" role="dialog" aria-hidden="true">
+    <div id="modalBox">
+      <h3 id="modalTitle">Adicionar Cavalo</h3>
+      <label class="label">Nome</label>
+      <input id="nome" type="text" />
+
+      <label class="label">Pai</label>
+      <input id="pai" type="text" />
+
+      <label class="label">Mãe</label>
+      <input id="mae" type="text" />
+
+      <label class="label">Copas Ganhas</label>
+      <input id="copas" type="number" min="0" />
+
+      <div class="row">
+        <button id="saveBtn" class="btn primary" style="flex:1">Salvar</button>
+        <button id="cancelBtn" class="btn" style="flex:1;background:#ddd">Cancelar</button>
+      </div>
+    </div>
   </div>
 
-  <div id="cadastro-box" style="display:none;">
-    <h3>Cadastrar</h3>
-    <input id="cad-username" placeholder="Usuário"><br><br>
-    <input id="cad-senha" type="password" placeholder="Senha"><br><br>
-    <button onclick="cadastrar()">Criar conta</button>
+  <div id="loginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);align-items:center;justify-content:center;z-index:999;padding:20px;">
+    <div style="background:white;padding:20px;border-radius:12px;max-width:380px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.2)">
+      <h3 style="margin-top:0">Login / Cadastro</h3>
+
+      <label class="label">Usuário</label>
+      <input id="loginUser" type="text" />
+
+      <label class="label" style="margin-top:10px">Senha</label>
+      <input id="loginPass" type="password" />
+
+      <div class="row" style="margin-top:18px">
+        <button id="doLogin" class="btn primary" style="flex:1">Entrar</button>
+        <button id="doRegister" class="btn" style="flex:1;background:#ccc">Cadastrar</button>
+      </div>
+
+      <button id="closeLogin" style="margin-top:14px;width:100%;padding:8px;border:0;background:#ddd;border-radius:8px">Fechar</button>
+    </div>
   </div>
 
-  <div id="user-area" style="display:none;">
-    <p>Logado como <b id="user-label"></b></p>
-    <button onclick="logout()">Sair</button>
-  </div>
+  <script type="module">
 
-  <hr>
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  <div id="admin-area" style="display:none;">
-    <h3>Adicionar Cavalo</h3>
-    <input id="nome" placeholder="Nome"><br><br>
-    <input id="pelagem" placeholder="Pelagem"><br><br>
-    <button onclick="adicionarCavalo()">Adicionar</button>
-    <hr>
-  </div>
+    const SUPABASE_URL = "https://uhnfgfmlghctzrictcaf.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobmZnZm1sZ2hjdHpyaWN0Y2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODE0NjYsImV4cCI6MjA3OTU1NzQ2Nn0.1ogJDVg6P6NFdlWuC7K9Jg66e01gVujJJFdq0FWc1lg";
 
-  <h2>Lista de Cavalos</h2>
-  <div id="lista"></div>
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  <div class="right">Feito por brick.</div>
+    let currentUser = null;
+    let editingId = null;
 
-</div>
+    const userArea = document.getElementById('userArea');
+    const controlsArea = document.getElementById('controlsArea');
+    const loginBtn = document.getElementById('loginBtn');
 
-<script>
-  const SUPABASE_URL = "https://uhnfgfmlghctzrictcaf.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobmZnZm1sZ2hjdHpyaWN0Y2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODE0NjYsImV4cCI6MjA3OTU1NzQ2Nn0.1ogJDVg6P6NFdlWuC7K9Jg66e01gVujJJFdq0FWc1lg";
+    const loginModal = document.getElementById('loginModal');
+    const closeLogin = document.getElementById('closeLogin');
+    const doLogin = document.getElementById('doLogin');
+    const doRegister = document.getElementById('doRegister');
+    const loginUser = document.getElementById('loginUser');
+    const loginPass = document.getElementById('loginPass');
 
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const addBtn = document.createElement('button');
+    addBtn.className = "btn primary";
+    addBtn.textContent = "Adicionar Cavalo";
+    addBtn.id = "addBtn";
 
-  async function carregarCavalos() {
-    const { data, error } = await supabase.from("cavalos").select("*");
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
 
-    if (error) {
-      console.error(error);
-      return;
+    const nomeIn = document.getElementById('nome');
+    const paiIn = document.getElementById('pai');
+    const maeIn = document.getElementById('mae');
+    const copasIn = document.getElementById('copas');
+    const saveBtn = document.getElementById('saveBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    const listEl = document.getElementById('list');
+
+    function escapeHtml(str){
+      if(str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
-    const lista = document.getElementById("lista");
-    lista.innerHTML = "";
+    loginBtn.onclick = () => { loginModal.style.display = 'flex'; };
+    closeLogin.onclick = () => { loginModal.style.display = 'none'; };
 
-    data.forEach((c) => {
-      const div = document.createElement("div");
-      div.className = "cavalo-card";
-      div.innerHTML = `
-        <b>${c.nome}</b><br>
-        Pelagem: ${c.pelagem}<br>
-        <div class="admin-buttons" style="display:none;">
-          <button onclick="editarCavalo(${c.id})">Editar</button>
-          <button onclick="excluirCavalo(${c.id})">Excluir</button>
-        </div>
-      `;
-      lista.appendChild(div);
-    });
+    doLogin.onclick = async () => {
+      const u = loginUser.value.trim();
+      const s = loginPass.value.trim();
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('username', u)
+        .eq('senha', s)
+        .single();
 
-    atualizarVisibilidadeAdmin();
-  }
+      if(error || !data){
+        alert('Usuário ou senha incorretos');
+        return;
+      }
 
-  function mostrarLogin() {
-    document.getElementById("login-box").style.display = "block";
-    document.getElementById("cadastro-box").style.display = "none";
-  }
+      currentUser = data;
+      loginModal.style.display = 'none';
+      renderUser();
+    };
 
-  function mostrarCadastro() {
-    document.getElementById("cadastro-box").style.display = "block";
-    document.getElementById("login-box").style.display = "none";
-  }
+    doRegister.onclick = async () => {
+      const u = loginUser.value.trim();
+      const s = loginPass.value.trim();
 
-  async function login() {
-    const username = document.getElementById("login-username").value;
-    const senha = document.getElementById("login-senha").value;
+      if(!u || !s){
+        alert('Preencha usuário e senha');
+        return;
+      }
 
-    const { data, error } = await supabase
-      .from("usuarios")
-      .select("*")
-      .eq("username", username)
-      .eq("senha", senha)
-      .single();
+      const { error } = await supabase
+        .from('usuarios')
+        .insert({ username: u, senha: s, role: 'user' });
 
-    if (error || !data) {
-      alert("Usuário ou senha incorretos.");
-      return;
+      if(error){
+        alert('Erro ao cadastrar: ' + error.message);
+        return;
+      }
+
+      alert('Cadastrado com sucesso! Faça login.');
+    };
+
+    function renderUser(){
+      if(!currentUser){
+        userArea.innerHTML = "";
+        controlsArea.innerHTML = "";
+        controlsArea.appendChild(loginBtn);
+        loadList();
+        return;
+      }
+      userArea.innerHTML = 'Logado como: ' + escapeHtml(currentUser.username) + ' (' + escapeHtml(currentUser.role) + ')';
+      controlsArea.innerHTML = "";
+      if(currentUser.role === 'admin'){
+        controlsArea.appendChild(addBtn);
+      }
+      loadList();
     }
 
-    localStorage.setItem("user", JSON.stringify(data));
-    location.reload();
-  }
+    addBtn.onclick = () => {
+      editingId = null;
+      modalTitle.textContent = "Adicionar Cavalo";
+      nomeIn.value = paiIn.value = maeIn.value = copasIn.value = '';
+      modal.style.display = 'flex';
+    };
 
-  async function cadastrar() {
-    const username = document.getElementById("cad-username").value;
-    const senha = document.getElementById("cad-senha").value;
+    cancelBtn.onclick = () => { modal.style.display = 'none'; };
 
-    const { error } = await supabase.from("usuarios").insert({
-      username,
-      senha,
-      role: "user"
-    });
+    saveBtn.onclick = async () => {
+      const nome = nomeIn.value.trim();
+      const pai = paiIn.value.trim();
+      const mae = maeIn.value.trim();
+      const copas = Number(copasIn.value) || 0;
 
-    if (error) {
-      alert("Erro ao cadastrar.");
-    } else {
-      alert("Conta criada!");
-      location.reload();
-    }
-  }
+      if(!nome){
+        alert('Digite o nome');
+        return;
+      }
 
-  function logout() {
-    localStorage.removeItem("user");
-    location.reload();
-  }
+      if(editingId){
+        await supabase.from('cavalos').update({ nome, pai, mae, copas }).eq('id', editingId);
+      } else {
+        await supabase.from('cavalos').insert({ nome, pai, mae, copas });
+      }
 
-  async function adicionarCavalo() {
-    const nome = document.getElementById("nome").value;
-    const pelagem = document.getElementById("pelagem").value;
+      modal.style.display = 'none';
+      loadList();
+    };
 
-    await supabase.from("cavalos").insert({ nome, pelagem });
+    async function loadList(){
+      const { data } = await supabase
+        .from('cavalos')
+        .select('*')
+        .order('inserted_at', { ascending: false });
 
-    carregarCavalos();
-  }
-
-  async function excluirCavalo(id) {
-    await supabase.from("cavalos").delete().eq("id", id);
-    carregarCavalos();
-  }
-
-  function editarCavalo(id) {
-    const novoNome = prompt("Novo nome:");
-    const novaPelagem = prompt("Nova pelagem:");
-    supabase.from("cavalos").update({ nome: novoNome, pelagem: novaPelagem }).eq("id", id);
-    carregarCavalos();
-  }
-
-  function atualizarVisibilidadeAdmin() {
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    const botoes = document.querySelectorAll(".admin-buttons");
-    const adminArea = document.getElementById("admin-area");
-
-    if (user && user.role === "admin") {
-      botoes.forEach(b => b.style.display = "block");
-      adminArea.style.display = "block";
-    } else {
-      botoes.forEach(b => b.style.display = "none");
-      adminArea.style.display = "none";
+      renderList(data || []);
     }
 
-    document.getElementById("auth-area").style.display = user ? "none" : "block";
-    document.getElementById("user-area").style.display = user ? "block" : "none";
-    if (user) document.getElementById("user-label").textContent = user.username;
-  }
+    function renderList(items){
+      if(!items.length){
+        listEl.innerHTML = '<div style="grid-column:1/-1;color:#6b7280">Nenhum cavalo salvo.</div>';
+        return;
+      }
 
-  carregarCavalos();
-  atualizarVisibilidadeAdmin();
-</script>
+      listEl.innerHTML = '';
 
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div><div class="label">Nome</div><div class="value">${escapeHtml(item.nome)}</div></div>
+          <div><div class="label">Pai</div><div class="value">${escapeHtml(item.pai || '')}</div></div>
+          <div><div class="label">Mãe</div><div class="value">${escapeHtml(item.mae || '')}</div></div>
+          <div><div class="label">Copas</div><div class="value">${escapeHtml(String(item.copas || 0))}</div></div>
+        `;
+
+        if(currentUser && currentUser.role === 'admin'){
+          const actions = document.createElement('div');
+          actions.className = 'actions';
+
+          const editBtn = document.createElement('button');
+          editBtn.className = 'edit';
+          editBtn.textContent = 'Editar';
+          editBtn.onclick = () => {
+            editingId = item.id;
+            modalTitle.textContent = 'Editar Cavalo';
+            nomeIn.value = item.nome;
+            paiIn.value = item.pai;
+            maeIn.value = item.mae;
+            copasIn.value = item.copas;
+            modal.style.display = 'flex';
+          };
+
+          const delBtn = document.createElement('button');
+          delBtn.className = 'del';
+          delBtn.textContent = 'Excluir';
+          delBtn.onclick = async () => {
+            if(!confirm('Excluir este cavalo?')) return;
+            await supabase.from('cavalos').delete().eq('id', item.id);
+            loadList();
+          };
+
+          actions.appendChild(editBtn);
+          actions.appendChild(delBtn);
+          card.appendChild(actions);
+        }
+
+        listEl.appendChild(card);
+      });
+    }
+
+    loadList();
+  </script>
 </body>
 </html>
